@@ -39,10 +39,10 @@ class Page
   def fetch_title
     title = {}
     fetch &&
-      page.css(".extra").each do |element|
+      page.at_css(".extra").each do |element|
         title_element = element.next_element
-        title[:english] = title_element.css('h2').text.capitalize
-        title[:bengali] = title_element.css('h3').text.split(":").last.strip
+        title[:english] = title_element.at_css('h2').text.capitalize
+        title[:bengali] = title_element.at_css('h3').text.split(":").last.strip
       end
     {
       english: title[:english],
@@ -53,7 +53,7 @@ class Page
   # First tab
   def fetch_bengali_lyrics
     fetch &&
-      page.css("#view1").css(".bengly").text
+      page.at_css("#view1").at_css(".bengly").text
   end
 
   @@errors_about = []
@@ -61,7 +61,7 @@ class Page
   def fetch_about
     result = {}
     about = fetch &&
-      page.css("#view2").css(".about").text.strip.split("\n")
+      page.at_css("#view2").at_css(".about").text.strip.split("\n")
     about.each do |elements|
       element = elements.split(":")
       @@errors_about << [{ name: fetch_title, about: about }] if element.count != 2
@@ -73,30 +73,30 @@ class Page
   # Third tab
   def fetch_notation
     fetch &&
-      page.css("#view3").text
+      page.at_css("#view3").text
   end
-
+at_
   # Fourth tab
   def fetch_staff_notation
     fetch &&
-      page.css("#view4").text
+      page.at_css("#view4").text
   end
 
   # Fifth tab
   def fetch_english_lyrics
     fetch &&
-      page.css("#view5").css(".engly").text
+      page.at_css("#view5").at_css(".engly").text
   end
 
   # Sixth tab
   def fetch_english_translations
     fetch &&
-      page.css("#view6").css(".transpre").text
+      page.at_css("#view6").at_css(".transpre").text
   end
 
   # Seventh tab
   def fetch_audio
     fetch &&
-      page.css("#view7").text
+      page.at_css("#view7").text
   end
 end
