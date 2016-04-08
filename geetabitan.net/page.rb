@@ -3,7 +3,6 @@ require 'nokogiri'
 require 'json'
 require 'pry'
 require 'csv'
-require 'execjs'
 
 # This class defines rules for scraping content off a poem page
 
