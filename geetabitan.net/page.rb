@@ -7,7 +7,7 @@ require 'csv'
 # This class defines rules for scraping content off a poem page
 
 class Page
-  def initialize(link, params)
+  def initialize(link, params = {})
     @link = link
     @params = params
   end
@@ -21,6 +21,9 @@ class Page
       english_lyrics: fetch_english_lyrics,
       english_translation: fetch_english_translations,
       audio: fetch_audio,
+      errors: {
+        about: @@errors_about,
+      },
     }
   end
 
@@ -53,16 +56,16 @@ class Page
       page.css("#view1").css(".bengly").text
   end
 
+  @@errors_about = []
   # Second tab
   def fetch_about
     result = {}
     about = fetch &&
       page.css("#view2").css(".about").text.strip.split("\n")
-    binding.pry
     about.each do |elements|
       element = elements.split(":")
-      puts element if element.count != 2
-      result[element[0].downcase] = (element[1] || "").strip
+      @@errors_about << [{ name: fetch_title, about: about }] if element.count != 2
+      result[element[0].downcase.strip] = (element[1] || "").strip
     end
     result
   end

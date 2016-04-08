@@ -10,15 +10,17 @@ class Scraper
   def scrape
     visit_indexes &&
       visit_pages
+    binding.pry
   end
 
   private
-  attr_accessor :song_list, :pages
+  attr_accessor :song_list, :songs
 
   def visit_indexes
-    @song_list = indexes.map do |index|
+    total = indexes.length
+    @song_list = indexes.each_with_index.map do |index, i|
       # Screen
-      print "."
+      puts "Index #{index} (#{i + 1}/#{total})"
       # Generate base URL to append the parsed links to
       base_url = "http://www.geetabitan.com/lyrics/#{index}"
       # View source of http://www.geetabitan.com/lyrics/A/song-list.html
@@ -40,22 +42,18 @@ class Scraper
             link: "#{base_url}/#{link}",
           }
         end
-    end.flatten
+    end
   end
 
   def visit_pages
-    song_list.map do |song|
+    list = song_list.flatten
+    total = list.length
+    @songs = list.each_with_index.map do |song, i|
+      puts "Song #{song[:text]} (#{i + 1}/#{total})"
       link = song.delete(:link)
       Page.new(link, song).result
     end
   end
-
-=begin
-  def visit_page(link)
-    page = HTTParty.get(link)
-    Nokogiri::HTML(page)
-  end
-=end
 
   def indexes
     # From http://www.geetabitan.com/lyrics/index.html
