@@ -13,14 +13,15 @@ class Scraper
   end
 
   private
-  attr_accessor :indexes, :pages
+  attr_accessor :song_list, :pages
 
   def visit_indexes
-    @indexes = indexes.map do |index|
+    @song_list = indexes.map do |index|
       # Screen
       print "."
       # Generate base URL to append the parsed links to
       base_url = "http://www.geetabitan.com/lyrics/#{index}"
+      # View source of http://www.geetabitan.com/lyrics/A/song-list.html
       link = "http://www.geetabitan.com/lyrics/js/list-#{index.downcase}.js"
       page = HTTParty.get(link)
       a = page.to_s.
@@ -43,7 +44,10 @@ class Scraper
   end
 
   def visit_pages
-    binding.pry
+    song_list.map do |song|
+      link = song.delete(:link)
+      Page.new(link, song).result
+    end
   end
 
 =begin

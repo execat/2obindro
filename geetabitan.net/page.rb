@@ -7,8 +7,9 @@ require 'csv'
 # This class defines rules for scraping content off a poem page
 
 class Page
-  def initialize(link)
+  def initialize(link, params)
     @link = link
+    @params = params
   end
 
   def result
@@ -24,8 +25,7 @@ class Page
   end
 
   # private
-
-  attr_accessor :link, :data, :page
+  attr_accessor :link, :params, :data, :page
 
   def fetch
     @data ||= HTTParty.get(link)
@@ -57,10 +57,12 @@ class Page
   def fetch_about
     result = {}
     about = fetch &&
-      page.css("#view2").strip.split("\n")
+      page.css("#view2").css(".about").text.strip.split("\n")
+    binding.pry
     about.each do |elements|
       element = elements.split(":")
-      result[element[0].downcase] = element[1].strip
+      puts element if element.count != 2
+      result[element[0].downcase] = (element[1] || "").strip
     end
     result
   end
