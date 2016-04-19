@@ -2,15 +2,16 @@ require 'httparty'
 require 'nokogiri'
 require 'json'
 require 'pry'
-require 'csv'
 
 require_relative 'page'
 
-class Scraper
+module Geetabitan
+end
+
+class Geetabitan::Scraper
   def scrape
     visit_indexes &&
       visit_pages
-    binding.pry
   end
 
   private
