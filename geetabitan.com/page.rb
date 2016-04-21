@@ -13,37 +13,49 @@ class Page
   end
 
   def result
+    return puts(@@errors) || { misc_data: Sequel.pg_json({ errors: @@errors.uniq }) } unless fetch
     {
-      bengali_lyrics: fetch_bengali_lyrics,
-      about: fetch_about,
+      link: link,
+      letter: fetch_title[:english][0].upcase,
+      english_name: fetch_title[:english],
+      bengali_name: fetch_title[:bengali],
+      lyrics: fetch_bengali_lyrics,
       notation: fetch_notation,
-      staff_notation: fetch_staff_notation,
+      staff_notation_pdf: fetch_staff_notation && fetch_staff_notation[:pdf],
+      staff_notation_midi: fetch_staff_notation && fetch_staff_notation[:midi],
       english_lyrics: fetch_english_lyrics,
       english_translation: fetch_english_translations,
-      audio: fetch_audio,
-      errors: {
-        about: @@errors_about,
-      },
-    }
+      misc_data: Sequel.pg_json({
+        bengali_bow: count_words(fetch_bengali_lyrics),
+        english_bow: count_words(fetch_english_lyrics),
+        english_trans_bow: count_words(fetch_english_translations),
+        html: fetch && page.to_html,
+        about_raw: fetch_about_raw,
+        errors: {
+          about: @@errors,
+        },
+      }),
+    }.merge(fetch_about)
   end
 
   # private
   attr_accessor :link, :params, :data, :page
+  @@errors = []
 
   def fetch
     @data ||= HTTParty.get(link)
+    @@errors << [{ link: link, error: "Response was incorrect", response: @data.code}]
+    return nil unless @data.code == 200
     @page ||= Nokogiri::HTML(data)
   end
 
   # 0th tab
   def fetch_title
     title = {}
-    fetch &&
-      page.at_css(".extra").each do |element|
-        title_element = element.next_element
-        title[:english] = title_element.at_css('h2').text.capitalize
-        title[:bengali] = title_element.at_css('h3').text.split(":").last.strip
-      end
+    title_element = fetch &&
+      page.at_css(".extra").next_element
+    title[:english] = title_element.at_css('h2').text.capitalize
+    title[:bengali] = title_element.at_css('h3').text.split(":").last.strip
     {
       english: title[:english],
       bengali: title[:bengali],
@@ -53,50 +65,85 @@ class Page
   # First tab
   def fetch_bengali_lyrics
     fetch &&
-      page.at_css("#view1").at_css(".bengly").text
+      page.at_css("#view1 .bengly").text
   end
 
-  @@errors_about = []
   # Second tab
+  def fetch_about_raw
+    accepted_keys = [:parjaay, :taal, :raag, :written_on, :notes, :place,
+                     :collection, :book]
+    about_hash.reject { |key, _| accepted_keys.include? key }
+  end
+
   def fetch_about
+    accepted_keys = [:parjaay, :taal, :raag, :written_on, :notes, :place,
+                     :collection, :book]
+    about_hash.select { |key, _| accepted_keys.include? key }
+  end
+
+  def about_hash
     result = {}
     about = fetch &&
-      page.at_css("#view2").at_css(".about").text.strip.split("\n")
+      page.at_css("#view2 .about").text.strip.split("\n")
     about.each do |elements|
       element = elements.split(":")
-      @@errors_about << [{ name: fetch_title, about: about }] if element.count != 2
-      result[element[0].downcase.strip] = (element[1] || "").strip
+      @@errors << [{ name: fetch_title, about: about }] if element.count != 2
+      result[element[0].downcase.strip.gsub(/ /, "_").to_sym] = (element[1] || "").strip
     end
     result
   end
 
   # Third tab
   def fetch_notation
-    fetch &&
-      page.at_css("#view3").text
+    relative_url = fetch &&
+      element = page.at_css("#view3 img") &&
+      element &&
+      link = element.attribute("src") &&
+      link && link.text.gsub(/ /, "")
+    return nil unless relative_url
+    URI::join(link, relative_url).to_s
   end
-at_
+
   # Fourth tab
   def fetch_staff_notation
-    fetch &&
-      page.at_css("#view4").text
+    element = fetch &&
+      item = page.at_css("#view4 ul") && item && item.css("a")
+    return nil unless element && element.count >= 2
+    urls = element.map { |l| l.attribute("href").text }
+    pdf_url = URI::join(link, urls.select { |u| u =~ /pdf/ }.first)
+    midi_url = URI::join(link, urls.select { |u| u =~ /\.mid/ }.first)
+    {
+      pdf_url: pdf_url,
+      midi_url: midi_url
+    }
   end
 
   # Fifth tab
   def fetch_english_lyrics
     fetch &&
-      page.at_css("#view5").at_css(".engly").text
+      page.at_css("#view5 .engly").text
   end
 
   # Sixth tab
   def fetch_english_translations
     fetch &&
-      page.at_css("#view6").at_css(".transpre").text
+      # page.at_css("#view6").at_css(".transpre").text
+      # nil if empty
+      html = page.at_css("#view6 .transpre") && html && html.text
   end
 
   # Seventh tab
   def fetch_audio
     fetch &&
       page.at_css("#view7").text
+  end
+
+  # Count words
+  def count_words string
+    return nil unless string
+    words = string.gsub(/\s+/, ' ').split(/[\s,']/)
+    frequency = Hash.new(0)
+    words.each { |word| frequency[word.downcase] += 1 }
+    frequency
   end
 end

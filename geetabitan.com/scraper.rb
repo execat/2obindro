@@ -2,6 +2,7 @@ require 'httparty'
 require 'nokogiri'
 require 'json'
 require 'pry'
+require 'sequel'
 
 require_relative 'page'
 
@@ -16,6 +17,24 @@ class Geetabitan::Scraper
 
   private
   attr_accessor :song_list, :songs
+
+  def database
+    return @_database[:geetabitan] if @_database
+
+    # Include postgres and use additional postgres features
+    @_database = Sequel.postgres(database_info)
+    @_database.extension :pg_array, :pg_json
+    @_database[:geetabitan]
+  end
+
+  def database_info
+    @_info = {
+      host: 'localhost',
+      user: 'robindro',
+      password: '',
+      database: 'robindro'
+    }
+  end
 
   def visit_indexes
     total = indexes.length
@@ -35,14 +54,14 @@ class Geetabitan::Scraper
         gsub(/\\/, "")
       Nokogiri::HTML(a).
         css('a').map do |index_entry|
-          text = index_entry.text
-          link = index_entry.attribute("href").text
-          {
-            letter: index,
-            text: text,
-            link: "#{base_url}/#{link}",
-          }
-        end
+        text = index_entry.text
+        link = index_entry.attribute("href").text
+        {
+          letter: index,
+          text: text,
+          link: "#{base_url}/#{link}",
+        }
+      end
     end
   end
 
@@ -52,7 +71,9 @@ class Geetabitan::Scraper
     @songs = list.each_with_index.map do |song, i|
       puts "Song #{song[:text]} (#{i + 1}/#{total})"
       link = song.delete(:link)
-      Page.new(link, song).result
+      song = Page.new(link, song).result
+      database.insert(song)
+      song
     end
   end
 
@@ -63,5 +84,6 @@ class Geetabitan::Scraper
   end
 end
 
-s = Scraper.new
+s = Geetabitan::Scraper.new
 s.scrape
+File.open("data.marshal", "w") { |to_file| Marshal.dump({ data: s.send(:songs)}, to_file) }
