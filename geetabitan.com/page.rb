@@ -10,10 +10,11 @@ class Page
   def initialize(link, params = {})
     @link = link
     @params = params
+    @errors = []
   end
 
   def result
-    return puts(@@errors) || { misc_data: Sequel.pg_json({ errors: @@errors.uniq }) } unless fetch
+    return puts(@errors) || { misc_data: Sequel.pg_json({ errors: @errors }) } unless fetch
     {
       link: link,
       letter: fetch_title[:english][0].upcase,
@@ -31,21 +32,21 @@ class Page
         english_trans_bow: count_words(fetch_english_translations),
         html: fetch && page.to_html,
         about_raw: fetch_about_raw,
-        errors: {
-          about: @@errors,
-        },
+        errors: @errors,
       }),
     }.merge(fetch_about)
   end
 
   # private
   attr_accessor :link, :params, :data, :page
-  @@errors = []
 
   def fetch
     @data ||= HTTParty.get(link)
-    @@errors << [{ link: link, error: "Response was incorrect", response: @data.code}]
-    return nil unless @data.code == 200
+    if @data.code != 200
+      @errors << [{ link: link, error: "Response was incorrect", response: @data.code}]
+      @errors = @errors.uniq
+      return nil
+    end
     @page ||= Nokogiri::HTML(data)
   end
 
@@ -56,6 +57,10 @@ class Page
       page.at_css(".extra").next_element
     title[:english] = title_element.at_css('h2').text.capitalize
     title[:bengali] = title_element.at_css('h3').text.split(":").last.strip
+    # Exception
+    if link == "http://www.geetabitan.com/lyrics/A/ananter-baani-tumi.html"
+      title[:english] = "Ananter Baani Tumi"
+    end
     {
       english: title[:english],
       bengali: title[:bengali],
@@ -69,25 +74,28 @@ class Page
   end
 
   # Second tab
+  def accepted_keys
+    [:parjaay, :taal, :raag, :written_on, :notes, :place, :collection, :book]
+  end
+
   def fetch_about_raw
-    accepted_keys = [:parjaay, :taal, :raag, :written_on, :notes, :place,
-                     :collection, :book]
+    # Filter by keys for which columns do not exist in the schema from setup.rb
     about_hash.reject { |key, _| accepted_keys.include? key }
   end
 
   def fetch_about
-    accepted_keys = [:parjaay, :taal, :raag, :written_on, :notes, :place,
-                     :collection, :book]
+    # Filter by keys for which columns exist in the schema from setup.rb
     about_hash.select { |key, _| accepted_keys.include? key }
   end
 
   def about_hash
     result = {}
+    # Split by newline and create a hash with key and value
     about = fetch &&
       page.at_css("#view2 .about").text.strip.split("\n")
     about.each do |elements|
       element = elements.split(":")
-      @@errors << [{ name: fetch_title, about: about }] if element.count != 2
+      @errors << [{ name: fetch_title, about: about }] && @errors = @errors.uniq if element.count != 2
       result[element[0].downcase.strip.gsub(/ /, "_").to_sym] = (element[1] || "").strip
     end
     result

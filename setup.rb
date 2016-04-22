@@ -27,8 +27,8 @@ DB.create_table? :geetabitan do
   String :letter
 
   # Main section
-  String :link, unique: true, null: false
-  String :english_name, unique: true, null: false
+  String :link, unique: true
+  String :english_name, unique: true
   String :bengali_name, null: false
   Text :lyrics
 
@@ -62,4 +62,3 @@ end
 
 # Reqruire
 require_relative 'geetabitan.com/scraper.rb'
-

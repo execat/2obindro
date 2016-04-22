@@ -72,7 +72,13 @@ class Geetabitan::Scraper
       puts "Song #{song[:text]} (#{i + 1}/#{total})"
       link = song.delete(:link)
       song = Page.new(link, song).result
-      database.insert(song)
+      begin
+        database.insert(song)
+      rescue Exception => ex
+        puts ex
+        puts "ERROR: #{song[:text]}"
+      end
+      sleep 0.1
       song
     end
   end
@@ -86,4 +92,6 @@ end
 
 s = Geetabitan::Scraper.new
 s.scrape
-File.open("data.marshal", "w") { |to_file| Marshal.dump({ data: s.send(:songs)}, to_file) }
+File.open("data.marshal", "w") do |to_file|
+  Marshal.dump({ data: s.send(:songs)}, to_file)
+end
