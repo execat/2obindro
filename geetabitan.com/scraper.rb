@@ -92,6 +92,6 @@ end
 
 s = Geetabitan::Scraper.new
 s.scrape
-File.open("data.marshal", "w") do |to_file|
+File.open("tmp/data.#{Time.now.to_i}.marshal", "w") do |to_file|
   Marshal.dump({ data: s.send(:songs)}, to_file)
 end
