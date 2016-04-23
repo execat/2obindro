@@ -10,6 +10,7 @@ class Page
   def initialize(link, params = {})
     @link = link
     @params = params
+    @current_link = params[:current_link]
     @errors = []
   end
 
@@ -38,7 +39,7 @@ class Page
   end
 
   # private
-  attr_accessor :link, :params, :data, :page
+  attr_accessor :link, :params, :data, :page, :current_link
 
   def fetch
     @data ||= HTTParty.get(link)
