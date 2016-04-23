@@ -100,6 +100,6 @@ end
 s = Tagoreweb::Scraper.new
 s.scrape
 puts "Marshall all data"
-File.open("tmp/data.#{Time.now.to_i}.marshal", "w") do |to_file|
+File.open("tmp/data.tagoreweb.#{Time.now.to_i}.marshal", "w") do |to_file|
   Marshal.dump({ data: s.send(:songs)}, to_file)
 end
