@@ -45,4 +45,4 @@ end
 
 # Require
 puts "Calling scraper"
-require_relative 'scraper.rb'
+require_relative 'tagoreweb/scraper.rb'

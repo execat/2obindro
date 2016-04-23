@@ -80,12 +80,12 @@ class Page
 
   def transform
     {
-      "রাগ" => "raag",
+      "রাগ" => :raag,
       "তাল" => "taal",
-      "রচনাকাল (বঙ্গাব্দ)" => "written_on_bengali",
-      "রচনাকাল (খৃষ্টাব্দ)" => "written_on_gregorian",
-      "রচনাস্থান" => "place",
-      "স্বরলিপিকার" => "music",
+      "রচনাকাল (বঙ্গাব্দ)" => :written_on_bengali,
+      "রচনাকাল (খৃষ্টাব্দ)" => :written_on_gregorian,
+      "রচনাস্থান" => :place,
+      "স্বরলিপিকার" => :music,
     }
   end
 
