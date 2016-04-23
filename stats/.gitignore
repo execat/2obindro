@@ -1,0 +1,6 @@
+# For R files
+.Rhistory
+.Rdata
+
+# Result files
+results
