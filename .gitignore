@@ -36,5 +36,5 @@ build/
 .rvmrc
 
 # For R files
-/.Rdata
-/.Rhistory
+.Rdata
+.Rhistory
