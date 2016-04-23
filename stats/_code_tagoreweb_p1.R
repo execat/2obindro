@@ -54,23 +54,26 @@ output <- function(analytics, table, folder_name = "results") {
   write.csv(analytics@label_summary, paste(folder_name, "/", file_prefix, ".label.csv", sep=""))
 }
 
+# Get connection
 con <- connect(table)
+# Allowed column names
 column_names <- c("name", "lyrics", "raag", "parjaay",
                   "taal", "written_on_bengali",
                   "written_on_gregorian", "music", "place")
-
 # Get data frame
 df_full <- select(con, column_names)
 
+# Cleanup
 # Factorize the class
 df_full$parjaay <- factor(df_full$parjaay)
-
 # Reduce to a 2 parjaa problem
 categories <- c("প্রেম", "পূজা")
 df <- subset(df_full, parjaay %in% categories)
 
-# TODO: Stemming
-
-algos <- c("SVM")
+# List of algorithms to apply
+algos <- c("MAXENT","SVM","GLMNET","TREE", "BOOSTING", "BAGGING", "SLDA")
+# algos <- c("SVM")
 analytics <- process(df, algos)
 output(analytics, table)
+
+# TODO: Stemming
