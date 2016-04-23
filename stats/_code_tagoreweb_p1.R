@@ -1,7 +1,7 @@
 require("RPostgreSQL")
 library(RTextTools)
 
-setwd("~/_code/me/2obindro")
+setwd("~/_code/me/2obindro/stats")
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(drv, dbname = "robindro", user = "robindro")
 table <- "tagoreweb"
