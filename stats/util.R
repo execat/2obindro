@@ -39,6 +39,7 @@ process <- function(df, algos, split = 0.8) {
 }
 
 output <- function(analytics, table, folder_name = "results") {
+  print("Generating output files")
   # Getting file name structure ready
   timestamp <- as.numeric(Sys.time())  
   file_prefix <- paste(table, "p1", timestamp, sep=".")
