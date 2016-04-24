@@ -12,12 +12,12 @@ setwd("~/_code/me/2obindro/stats")
 table_1 <- "tagoreweb"
 table_2 <- "geetabitan"
 
-fetch_data <- function(con, table, column_names) {
+fetch_data <- function(con, table_name, column_names) {
   # Connect to the table
-  con <- connect(table)
+  con <- connect(table_name)
   
   # Get data frame
-  df_full <- select(con, column_names)
+  df_full <- select(con, table_name, column_names)
   
   # Cleanup
   # Factorize the class
