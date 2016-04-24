@@ -10,16 +10,16 @@ library(RTextTools)
 source('./util.R')
 
 setwd("~/_code/me/2obindro/stats")
-table <- "tagoreweb"
+table_name <- "tagoreweb"
 
 # Get connection
-con <- connect(table)
+con <- connect(table_name)
 # Allowed column names
 column_names <- c("name", "lyrics", "raag", "parjaay",
                   "taal", "written_on_bengali",
                   "written_on_gregorian", "music", "place")
 # Get data frame
-df_full <- select(con, column_names)
+df_full <- select(con, table_name, column_names)
 
 # Cleanup
 # Factorize the class
@@ -33,4 +33,7 @@ algos <- c("MAXENT","SVM","GLMNET","TREE", "BOOSTING", "BAGGING", "SLDA")
 # Return analytics after running the algos on th data frame
 analytics <- process(df, algos)
 # Output all the results to screen and files
-output(analytics, table)
+output(analytics, table_name)
+
+# Disconnect safely
+RPostgreSQL::dbDisconnect(con)

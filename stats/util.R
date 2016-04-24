@@ -9,12 +9,12 @@ connect <- function(table) {
   con
 }
 
-select <- function(con, column_names=c()) {
+select <- function(con, table_name, column_names=c()) {
   columns <- paste(column_names, collapse=", ")
   if(columns == "") {
     columns = "*"
   }
-  dbGetQuery(con, paste("SELECT", columns,  "FROM", table))
+  dbGetQuery(con, paste("SELECT", columns, "FROM", table_name))
 }
 
 process <- function(df, algos, split = 0.8) {
@@ -39,9 +39,14 @@ process <- function(df, algos, split = 0.8) {
 }
 
 output <- function(analytics, table, folder_name = "results") {
-  summary(analytics)
+  # Getting file name structure ready
   timestamp <- as.numeric(Sys.time())  
   file_prefix <- paste(table, "p1", timestamp, sep=".")
+  
+  # Write general analysis
+  write.csv(summary(analytics), paste(folder_name, "/", file_prefix, ".csv", sep=""))
+  
+  # Write specific analysis
   write.csv(analytics@document_summary, paste(folder_name, "/", file_prefix, ".document.csv", sep=""))
   write.csv(analytics@algorithm_summary, paste(folder_name, "/", file_prefix, ".algorithm.csv", sep=""))
   write.csv(analytics@ensemble_summary,  paste(folder_name, "/", file_prefix, ".ensemble.csv", sep=""))
