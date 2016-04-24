@@ -1,3 +1,8 @@
+#
+# This file runs the classifier(s) on data containing 2 parjaays: namely 
+# "প্রেম" and "পূজা" over the entire dataset from the tagoreweb dataset.
+#
+
 library(RPostgreSQL)
 library(RTextTools)
 
