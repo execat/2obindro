@@ -38,11 +38,11 @@ process <- function(df, algos, split = 0.8) {
   analytics <- create_analytics(container, results)
 }
 
-output <- function(analytics, table, folder_name = "results") {
+output <- function(analytics, table, run, folder_name = "results") {
   print("Generating output files")
   # Getting file name structure ready
   timestamp <- as.numeric(Sys.time())  
-  file_prefix <- paste(table, "p1", timestamp, sep=".")
+  file_prefix <- paste(table, run, timestamp, sep=".")
   
   # Write general analysis
   write.csv(summary(analytics), paste(folder_name, "/", file_prefix, ".csv", sep=""))

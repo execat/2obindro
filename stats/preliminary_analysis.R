@@ -22,6 +22,7 @@ fetch_data <- function(con, table_name, column_names) {
   # Cleanup
   # Factorize the class
   df_full$parjaay <- factor(df_full$parjaay)
+  df_full
 }
 
 # For `tagoreweb`

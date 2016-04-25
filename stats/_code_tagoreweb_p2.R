@@ -24,16 +24,14 @@ df_full <- select(con, table_name, column_names)
 # Cleanup
 # Factorize the class
 df_full$parjaay <- factor(df_full$parjaay)
-# Reduce to a 2 parjaa problem
-categories <- c("প্রেম", "পূজা")
-df <- subset(df_full, parjaay %in% categories)
+df <- df_full
 
 # List of algorithms to apply
 algos <- c("MAXENT","SVM","GLMNET","TREE", "BOOSTING", "BAGGING", "SLDA")
 # Return analytics after running the algos on th data frame
 analytics <- process(df, algos)
 # Output all the results to screen and files
-output(analytics, table_name, "p1")
+output(analytics, table_name, "p2")
 
 # Disconnect safely
 RPostgreSQL::dbDisconnect(con)
